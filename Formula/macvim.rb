@@ -1,16 +1,3 @@
-class FrameworkPythonRequirement < Requirement
-  fatal true
-
-  satisfy do
-    q = `python -c "import distutils.sysconfig as c; print(c.get_config_var('PYTHONFRAMEWORK'))"`
-    !q.chomp.empty?
-  end
-
-  def message
-    "Python needs to be built as a framework."
-  end
-end
-
 # Reference: https://github.com/macvim-dev/macvim/wiki/building
 class Macvim < Formula
   desc "GUI for vim, made for OS X"
@@ -33,7 +20,6 @@ class Macvim < Formula
   depends_on "luajit" => :optional
   depends_on :python => :recommended
   depends_on :python3 => :optional
-  depends_on FrameworkPythonRequirement if build.with? "python"
 
   # Help us! We'd like to use superenv in these environments, too
   env :std if MacOS.version <= :snow_leopard
@@ -81,8 +67,8 @@ class Macvim < Formula
       ENV.prepend "CFLAGS", `python-config --cflags`.chomp.gsub(/-mno-fused-madd /, "")
 
       framework_script = <<-EOS.undent
-        import distutils.sysconfig
-        print distutils.sysconfig.get_config_var("PYTHONFRAMEWORKPREFIX")
+        import sysconfig
+        print sysconfig.get_config_var("PYTHONFRAMEWORKPREFIX")
       EOS
       framework_prefix = `python -c '#{framework_script}'`.strip
       # Non-framework builds should have PYTHONFRAMEWORKPREFIX defined as ""
